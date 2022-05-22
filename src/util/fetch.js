@@ -67,9 +67,9 @@ export const movieFetchService = (status) => {
 };
 
 //Service call for doctor details API
-export const doctorDetailsFetchService = (doctorId) => {
+export const movieDetailsFetchService = (movieId) => {
   return new Promise((resolve, reject) => {
-    let url = BASE_URL + `/doctors/${doctorId}`;
+    let url = BASE_URL + `/movies/${movieId}`;
     fetch(url)
       .then((res) => res.json())
       .then((json) => {
@@ -101,11 +101,23 @@ export const appointmentsFetchService = () => {
   });
 };
 
-//Service call for doctor timeslots API
-export const timeSlotFetchService = (doctorId, appointmentDate) => {
+//Service call for genres API
+export const fetchArtistsService = () => {
   return new Promise((resolve, reject) => {
-    let url =
-      BASE_URL + `/doctors/${doctorId}/timeSlots/?date=${appointmentDate}`;
+    let url = BASE_URL + `/artists`;
+    fetch(url)
+      .then((res) => res.json())
+      .then((json) => {
+        resolve(json);
+      })
+      .catch((error) => console.log("error", reject(error)));
+  });
+};
+
+//Service call for genres API
+export const fetchGenreService = () => {
+  return new Promise((resolve, reject) => {
+    let url = BASE_URL + `/genres`;
     fetch(url)
       .then((res) => res.json())
       .then((json) => {

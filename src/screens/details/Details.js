@@ -1,60 +1,80 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./Details.css";
 import Header from "../../common/header/Header";
-import { Box, Button, Grid, Typography } from "@material-ui/core";
+import {
+  Box,
+  Button,
+  Grid,
+  GridList,
+  GridListTile,
+  GridListTileBar,
+  Typography,
+} from "@material-ui/core";
 import { ArrowBackIos } from "@material-ui/icons";
 import Loader from "../../common/loader/Loader";
-const Details = (props) => {
-  const [movie, setMovie] = useState({
-    id: "009ae262-a234-11e8-b475-720006ceb890",
-    title: "The Godfather",
-    storyline:
-      "A chilling portrait of the Corleone familys rise and near fall from power in America along with balancing the story of the Sicilian clans ugly crime business in which they are engaged.",
-    genres: ["Drama", "Crime"],
-    duration: 177,
-    poster_url:
-      "https://upload.wikimedia.org/wikipedia/en/1/1c/Godfather_ver1.jpg",
-    trailer_url: "https://www.youtube.com/watch/?v=sY1S34973zA",
-    wiki_url: "https://en.wikipedia.org/wiki/The_Godfather",
-    release_date: "1972-03-15",
-    censor_board_rating: "A",
-    rating: 9.2,
-    status: "RELEASED",
-    artists: [
-      {
-        id: "f114b346-a237-11e8-9077-720006ceb890",
-        first_name: "Marlon",
-        last_name: "Brando",
-        role_type: "ACTOR",
-        profile_description:
-          "Marlon Brando Jr. was an American actor and film director. He is credited with bringing realism to film acting and helping to popularize the Stanislavski system of acting having studied with Stella Adler in the 1940s. Regarded for his cultural influence on 20th century film, Brandos Academy Award-winning performances include that of Terry Malloy in On the Waterfront (1954) and Don Vito Corleone in The Godfather (1972). Brando was an activist for many causes, notably the civil rights movement and various Native American movements.",
-        profile_url:
-          "https://upload.wikimedia.org/wikipedia/commons/e/e5/Marlon_Brando_%28cropped%29.jpg",
-        wiki_url: "https://en.wikipedia.org/wiki/Marlon_Brando",
-      },
-      {
-        id: "359f7e8a-a23b-11e8-9077-720006ceb890",
-        first_name: "Al",
-        last_name: "Pacino",
-        role_type: "ACTOR",
-        profile_description:
-          "Alfredo James Pacino is an American actor and filmmaker. Pacino has had a career spanning over five decades, during which time he has received numerous accolades and honors both competitive and honorary, among them an Academy Award, two Tony Awards, two Primetime Emmy Awards, a British Academy Film Award, four Golden Globe Awards, the Lifetime Achievement Award from the American Film Institute, the Golden Globe Cecil B. DeMille Award, and the National Medal of Arts. He is also one of few performers to have won a competitive Oscar, an Emmy, and a Tony Award for acting, dubbed the Triple Crown of Acting.",
-        profile_url:
-          "https://upload.wikimedia.org/wikipedia/commons/9/98/Al_Pacino.jpg",
-        wiki_url: "https://en.wikipedia.org/wiki/Al_Pacino",
-      },
-    ],
-  });
+import { Rating } from "@material-ui/lab";
 
+import YouTube from "react-youtube";
+import { withStyles } from "@material-ui/core/styles";
+import { movieDetailsFetchService } from "../../util/fetch";
+import { withRouter } from "react-router-dom";
+
+const styles = (theme) => ({
+  root: {
+    display: "flex",
+    flexWrap: "wrap",
+    justifyContent: "space-around",
+    overflow: "hidden",
+    backgroundColor: theme.palette.background.paper,
+  },
+  gridList: {
+    height: 450,
+    cursor: "pointer",
+  },
+});
+
+const Details = (props) => {
+  const { classes } = props;
+  const [rating, setRating] = useState(null);
+  const [movie, setMovie] = useState(null);
+  const movieId = props.match.params.id;
+  const [authenticated, setAuthenticated] = useState(
+    Boolean(localStorage.getItem("token"))
+  );
+  const [openLogin, setOpenLogin] = React.useState(false);
+
+  const handleOpenLogin = () => {
+    setOpenLogin(true);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setAuthenticated(false);
+  };
+
+  useEffect(() => {
+    const fetchMovieDetails = async (movieId) => {
+      try {
+        let movie = await movieDetailsFetchService(movieId);
+        setMovie(movie);
+      } catch (error) {
+        alert("Error fetching the movie details" + error);
+      }
+    };
+    setMovie(null);
+    if (movieId) fetchMovieDetails(movieId);
+  }, [movieId]);
   return (
     <React.Fragment>
-      <Header />
+      <Header
+        authenticated={authenticated}
+        handleOpenLogin={handleOpenLogin}
+        handleLogout={handleLogout}
+        movieId={movie && movie.id}
+      />
       {movie ? (
         <React.Fragment>
-          <Button
-            onClick={() => props.history.push("/")}
-            variant={"standard"}
-            startIcon={<ArrowBackIos />}
+          <Box
             sx={{
               textTransform: "none",
               marginTop: "8px",
@@ -63,8 +83,15 @@ const Details = (props) => {
               height: "24px",
             }}
           >
-            Back to Home
-          </Button>
+            <Button
+              onClick={() => props.history.push("/")}
+              variant={"standard"}
+              startIcon={<ArrowBackIos />}
+            >
+              Back to Home
+            </Button>
+          </Box>
+
           <Grid container spacing={4}>
             <Grid item xs={2}>
               <img
@@ -74,9 +101,9 @@ const Details = (props) => {
                 alt={movie.title}
               />
             </Grid>
-            <Grid item xs={8}>
+            <Grid item xs={7}>
               <Typography variant={"h2"}>{movie.title}</Typography>
-              <Typography variant={"div"} sx={{ fontWeight: "bold" }}>
+              <Typography component={"div"}>
                 <Box
                   sx={{
                     display: "inline",
@@ -87,7 +114,7 @@ const Details = (props) => {
                 </Box>
                 {movie.genres.join(", ")}
               </Typography>
-              <Typography variant={"div"} sx={{ fontWeight: "bold" }}>
+              <Typography component={"div"}>
                 <Box
                   sx={{
                     display: "inline",
@@ -98,7 +125,7 @@ const Details = (props) => {
                 </Box>
                 {movie.duration}
               </Typography>
-              <Typography variant={"div"} sx={{ fontWeight: "bold" }}>
+              <Typography component={"div"}>
                 <Box
                   sx={{
                     display: "inline",
@@ -109,7 +136,7 @@ const Details = (props) => {
                 </Box>
                 {movie.release_date}
               </Typography>
-              <Typography variant={"div"} sx={{ fontWeight: "bold" }}>
+              <Typography component={"div"}>
                 <Box
                   sx={{
                     display: "inline",
@@ -118,20 +145,22 @@ const Details = (props) => {
                 >
                   Rating:{" "}
                 </Box>
-                {movie.rating}
+                {movie.critics_rating}
               </Typography>
-              <Typography variant={"div"} paragraph sx={{ fontWeight: "bold" }}>
+              <Typography component={"div"} paragraph>
                 <Box
                   sx={{
                     display: "inline",
+                    marginTop: "16px",
+                    marginBottom: "16px",
                     fontWeight: "bold",
                   }}
                 >
                   Plot:{" "}
                 </Box>
-                {movie.storyline}
+                ({<a href={movie.wiki_url}>Wiki Link </a>}){movie.storyline}
               </Typography>
-              <Typography variant={"div"} sx={{ fontWeight: "bold" }}>
+              <Typography component={"div"}>
                 <Box
                   sx={{
                     fontWeight: "bold",
@@ -140,8 +169,66 @@ const Details = (props) => {
                   Trailer:{" "}
                 </Box>
               </Typography>
+              <Box
+                sx={{
+                  fontWeight: "bold",
+                }}
+              >
+                <YouTube
+                  videoId={movie.trailer_url.substring(
+                    movie.trailer_url.indexOf("v=") + 2
+                  )}
+                  width="100%"
+                />
+                {movie.trailer_url.substring(
+                  movie.trailer_url.lastIndexOf("v=")
+                )}
+              </Box>
             </Grid>
-            <Grid item xs={2}></Grid>
+            <Grid item xs={3}>
+              <Typography component={"div"}>
+                <Box
+                  sx={{
+                    fontWeight: "bold",
+                  }}
+                >
+                  Rating:{" "}
+                </Box>
+                <Rating
+                  name="rating"
+                  value={rating}
+                  onChange={(event, newValue) => {
+                    setRating(newValue);
+                  }}
+                />
+              </Typography>
+              <Typography component={"div"}>
+                <Box
+                  sx={{
+                    fontWeight: "bold",
+                  }}
+                >
+                  Artists:{" "}
+                </Box>
+                <GridList className={classes.gridList} cols={2}>
+                  {movie.artists.map((artist) => (
+                    <GridListTile key={artist.profile_url}>
+                      <img
+                        src={artist.profile_url}
+                        alt={`${artist.first_name} ${artist.last_name}`}
+                      />
+                      <GridListTileBar
+                        title={`${artist.first_name} ${artist.last_name}`}
+                        classes={{
+                          root: classes.titleBar,
+                          title: classes.title,
+                        }}
+                      />
+                    </GridListTile>
+                  ))}
+                </GridList>
+              </Typography>
+            </Grid>
           </Grid>
         </React.Fragment>
       ) : (
@@ -150,4 +237,4 @@ const Details = (props) => {
     </React.Fragment>
   );
 };
-export default Details;
+export default withStyles(styles)(withRouter(Details));

@@ -7,7 +7,6 @@ import {
   Grid,
   TextField,
 } from "@material-ui/core";
-import { loginService } from "../../util/fetch";
 import { Alert } from "@material-ui/lab";
 
 const Login = ({ handleLogin }) => {
@@ -21,21 +20,8 @@ const Login = ({ handleLogin }) => {
     setSubmitting(true);
     setError(null);
     try {
-      let response = await loginService(email, password);
-      if (!response.message) {
-        localStorage.setItem("token", response.accessToken);
-        localStorage.setItem("emailId", response.emailAddress);
-        localStorage.setItem("userId", response.id);
-        localStorage.setItem(
-          "userName",
-          `${response.firstName} ${response.lastName}`
-        );
-        setSubmitting(false);
-        handleLogin();
-      } else {
-        setSubmitting(false);
-        setError(response.message);
-      }
+      localStorage.setItem("token", "token");
+      handleLogin();
     } catch (error) {
       alert(error);
     }

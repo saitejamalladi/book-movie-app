@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { registerService } from "../../util/fetch";
 import {
   Box,
   Button,
@@ -7,9 +6,6 @@ import {
   LinearProgress,
   TextField,
 } from "@material-ui/core";
-import { DatePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
-import DateFnsUtils from "@date-io/date-fns";
-import { format } from "date-fns";
 import { Alert } from "@material-ui/lab";
 
 function Register() {
@@ -23,7 +19,6 @@ function Register() {
   const [password, setPassword] = useState(null);
   const [mobile, setMobile] = useState(null);
   const [mobileError, setMobileError] = useState(false);
-  const [dob, setDob] = useState(new Date());
 
   const handleMobileChange = (e) => {
     let updatedMobile = e.target.value;
@@ -37,7 +32,7 @@ function Register() {
   const submitRegister = async (e) => {
     e.preventDefault();
 
-    if (isNaN(mobile) || mobile.length !== 10) {
+    if (mobile.length !== 10) {
       setMobileError("Enter valid mobile number");
       return;
     }
@@ -48,13 +43,12 @@ function Register() {
     let registerOj = {
       firstName: firstName,
       lastName: lastName,
-      dob: format(dob, "yyy-MM-dd"),
-      mobile: mobile,
-      password: password,
       emailId: email,
+      password: password,
+      mobile: mobile,
     };
     try {
-      await registerService(registerOj);
+      // await registerService(registerOj);
       setResponse("Registration Successful");
       setSubmitting(false);
       setRegistrationComplete(true);
@@ -134,7 +128,7 @@ function Register() {
             <TextField
               required
               id="mobile"
-              label="Mobile"
+              label="Contact No."
               disabled={submitting || registrationComplete}
               error={mobileError}
               helperText={mobileError}
@@ -142,21 +136,6 @@ function Register() {
               onChange={handleMobileChange}
               variant="standard"
             />
-          </Grid>
-          <Grid item>
-            <MuiPickersUtilsProvider utils={DateFnsUtils}>
-              <DatePicker
-                required
-                autoOk
-                label="Date"
-                value={dob}
-                disabled={submitting || registrationComplete}
-                onChange={(value) => setDob(value)}
-                format="yyyy-MM-dd"
-                animateYearScrolling
-                disableToolbar
-              />
-            </MuiPickersUtilsProvider>
           </Grid>
           <Grid item>
             <Button

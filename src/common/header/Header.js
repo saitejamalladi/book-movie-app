@@ -3,9 +3,15 @@ import React from "react";
 import "./Header.css";
 import logoSrc from "../../assets/logo.svg";
 import { Button, Grid, Typography } from "@material-ui/core";
+import { withRouter } from "react-router-dom";
 
-function Header({ authenticated, handleOpenLogin, handleLogout }) {
-  authenticated = true;
+function Header({
+  authenticated,
+  handleOpenLogin,
+  handleLogout,
+  movieId,
+  history,
+}) {
   const handleSubmitLogout = async () => {
     handleLogout();
   };
@@ -22,17 +28,19 @@ function Header({ authenticated, handleOpenLogin, handleLogout }) {
         </Typography>
       </Grid>
       <Grid item>
-        {authenticated && (
-          <Grid container justify={"end"} spacing={4}>
+        <Grid container justify={"end"} spacing={2}>
+          {movieId && (
             <Grid item>
               <Button
                 color={"primary"}
                 variant={"contained"}
-                onClick={handleSubmitLogout}
+                onClick={() => history.push(`/bookshow/${movieId}`)}
               >
                 Book Show
               </Button>
             </Grid>
+          )}
+          {authenticated ? (
             <Grid item>
               <Button
                 color={"default"}
@@ -42,22 +50,21 @@ function Header({ authenticated, handleOpenLogin, handleLogout }) {
                 Logout
               </Button>
             </Grid>
-          </Grid>
-        )}
-      </Grid>
-      {!authenticated && (
-        <Grid item>
-          <Button
-            color={"default"}
-            variant={"contained"}
-            onClick={handleOpenLogin}
-          >
-            Login
-          </Button>
+          ) : (
+            <Grid item>
+              <Button
+                color={"default"}
+                variant={"contained"}
+                onClick={handleOpenLogin}
+              >
+                Login
+              </Button>
+            </Grid>
+          )}
         </Grid>
-      )}
+      </Grid>
     </Grid>
   );
 }
 
-export default Header;
+export default withRouter(Header);

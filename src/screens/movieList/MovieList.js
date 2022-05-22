@@ -1,20 +1,29 @@
 import React, { useEffect, useState } from "react";
-import { movieFetchService } from "../../util/fetch";
 import {
+  fetchArtistsService,
+  fetchGenreService,
+  movieFetchService,
+} from "../../util/fetch";
+import {
+  Box,
   Button,
-  Card,
+  Checkbox,
+  FormControl,
   Grid,
   GridList,
   GridListTile,
   GridListTileBar,
-  LinearProgress,
-  Paper,
+  InputLabel,
+  ListItemText,
+  MenuItem,
+  Select,
+  TextField,
   Typography,
 } from "@material-ui/core";
-import DoctorDetails from "./DoctorDetails";
-import BookAppointment from "./BookAppointment";
 import { withStyles } from "@material-ui/core/styles";
 import { withRouter } from "react-router-dom";
+
+import { DatePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
 
 const styles = (theme) => ({
   root: {
@@ -52,10 +61,27 @@ const styles = (theme) => ({
  *   },
  * ];
  */
+
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+const MenuProps = {
+  PaperProps: {
+    style: {
+      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+      width: 250,
+    },
+  },
+};
 function MovieList(props) {
   const { classes } = props;
   const [releasedMovies, setReleasedMovies] = useState([]);
   const [upcomingMovies, setUpcomingMovies] = useState([]);
+  const [genreOptions, setGenreOptions] = useState([]);
+  const [artistsOptions, setAtistsOptions] = useState([]);
+  const [movieName, setMovieName] = useState("");
+  const [genres, setGenres] = useState([]);
+  const [artists, setArtists] = useState([]);
+
   useEffect(() => {
     const fetchMovies = async () => {
       try {
@@ -68,12 +94,38 @@ function MovieList(props) {
         let releasedResponse = await movieFetchService("RELEASED");
         setReleasedMovies(releasedResponse.movies);
       } catch (error) {
-        alert("Error fetching the doctors" + error);
+        alert("Error fetching the movies" + error);
       }
     };
     setUpcomingMovies([]);
     setReleasedMovies([]);
     fetchMovies();
+  }, []);
+  useEffect(() => {
+    const fetchGenres = async () => {
+      try {
+        let response = await fetchGenreService();
+        setGenreOptions(response.genres.map((genre) => genre.genre));
+      } catch (error) {
+        alert("Error fetching the genres" + error);
+      }
+    };
+    fetchGenres();
+  }, []);
+  useEffect(() => {
+    const fetchArtists = async () => {
+      try {
+        let response = await fetchArtistsService();
+        setAtistsOptions(
+          response.artists.map((artist) => {
+            return artist.first_name + " " + artist.last_name;
+          })
+        );
+      } catch (error) {
+        alert("Error fetching the artists" + error);
+      }
+    };
+    fetchArtists();
   }, []);
   return (
     <div className={classes.root}>
@@ -109,7 +161,111 @@ function MovieList(props) {
           </GridList>
         </Grid>
         <Grid item xs={"auto"}>
-          <Card sx={{ minWidth: 275, minHeight: 275 }}>sdajskjdhka</Card>
+          <Box elevation={3} sx={{ padding: "16px", margin: "16px" }}>
+            <Typography variant={"body1"} color={"primary"}>
+              Find movies by:
+            </Typography>
+            <Grid container spacing={1} direction={"column"}>
+              <Grid item>
+                <TextField
+                  id="movie-name"
+                  label="Movie Name"
+                  value={movieName}
+                  onChange={(e) => setMovieName(e.target.value)}
+                  variant="standard"
+                />
+              </Grid>
+              <Grid item>
+                <FormControl
+                  variant="standard"
+                  sx={{ m: 1, minWidth: 240 }}
+                  fullWidth
+                >
+                  <InputLabel id="demo-simple-select-standard-label">
+                    Genres
+                  </InputLabel>
+                  <Select
+                    labelId="genres"
+                    value={genres}
+                    multiple
+                    variant={"standard"}
+                    renderValue={(selected) => {
+                      if (selected.length === 0) {
+                        return <em>Genres</em>;
+                      }
+                      return selected.join(", ");
+                    }}
+                    onChange={(e) =>
+                      setGenres(
+                        typeof e.target.value === "string"
+                          ? e.target.value.split(",")
+                          : e.target.value
+                      )
+                    }
+                    MenuProps={MenuProps}
+                  >
+                    <MenuItem disabled value="">
+                      <em>Genres</em>
+                    </MenuItem>
+                    {genreOptions.map((option) => (
+                      <MenuItem key={option} value={option}>
+                        <Checkbox checked={genres.indexOf(option) > -1} />
+                        <ListItemText primary={option} />
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item>
+                <FormControl
+                  variant="standard"
+                  sx={{ m: 1, minWidth: 240 }}
+                  fullWidth
+                >
+                  <InputLabel id="demo-simple-select-standard-label">
+                    Artists
+                  </InputLabel>
+                  <Select
+                    labelId="artists"
+                    value={artists}
+                    multiple
+                    variant={"standard"}
+                    renderValue={(selected) => {
+                      if (selected.length === 0) {
+                        return <em>Artists</em>;
+                      }
+                      return selected.join(", ");
+                    }}
+                    onChange={(e) =>
+                      setArtists(
+                        typeof e.target.value === "string"
+                          ? e.target.value.split(",")
+                          : e.target.value
+                      )
+                    }
+                    MenuProps={MenuProps}
+                  >
+                    <MenuItem disabled value="">
+                      <em>Artists</em>
+                    </MenuItem>
+                    {artistsOptions.map((option) => (
+                      <MenuItem key={option} value={option}>
+                        <Checkbox
+                          checked={artistsOptions.indexOf(option) > -1}
+                        />
+                        <ListItemText primary={option} />
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item>
+                <Button color={"primary"} variant={"contained"}>
+                  Apply
+                </Button>
+              </Grid>
+            </Grid>
+          </Box>
         </Grid>
       </Grid>
     </div>
